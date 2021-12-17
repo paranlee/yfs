@@ -1,0 +1,284 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<!-- saved from url=(0061)labs/index.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<meta name="generator" content="HTML Tidy for Linux/x86 (vers 1st August 2002), see www.w3.org">
+<link rel="StyleSheet" href="./6.824 Lab Information_files/style.css" type="text/css">
+<title>6.824 Lab Information</title>
+<meta name="keywords" content="MIT EECS 6.824 2010 Lab Information">
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<center>
+<h2><a href="index.html">6.824</a> - Spring 2012</h2>
+</center>
+
+<center>
+<h1>Lab Information</h1>
+</center>
+
+<hr>
+
+<h2>Lab overview</h2>
+
+<p>
+In this sequence of labs, you'll build a multi-server file system
+called Yet Another File System (<tt>yfs</tt>) in the spirit of <a href="thekkath-frangipani.pdf">Frangipani</a>.  At the end
+of all the labs, your file server architecture will look like this:
+</p><p>
+</p><center><img src="./6.824 Lab Information_files/yfs.jpg"></center>
+<p>
+
+You'll write a file server process, labeled <tt>yfs</tt> above, using
+the <a href="http://fuse.sourceforge.net/">FUSE</a> toolkit.  Each
+client host will run a copy of <tt>yfs</tt>.  Each <tt>yfs</tt> will create
+a file system visible to applications on the same machine, and 
+FUSE will forward application file system operations to <tt>yfs</tt>.
+All the <tt>yfs</tt> instances will store file system data in a
+single shared
+"extent" server, so that all client machines will see a single
+shared file system.
+
+</p><p>
+This architecture is appealing because (in principle) it shouldn't
+slow down very much as you add client hosts. Most of the complexity is
+in the per-client <tt>yfs</tt> program, so new clients make use of
+their own CPUs. The extent server is shared, but hopefully it's simple
+and fast enough to handle a large number of clients. In contrast, a
+conventional NFS server is pretty complex (it has a complete file
+system implementation) so it's more likely to be a bottleneck when
+shared by many NFS clients.
+
+<a name="labs">
+</a></p><h2><a name="labs">Lab assignments</a></h2><a name="labs">
+</a>
+
+<a href="labs/lab-1.html">Lab 1 - Lock Server</a><br>
+<a href="labs/lab-2.html">Lab 2 - Basic File Server</a><br>
+<a href="labs/lab-3.html">Lab 3 - MKDIR, UNLINK, and Locking</a><br>
+<a href="labs/lab-4.html">Lab 4 - Caching Lock Server</a><br>
+<a href="labs/lab-5.html">Lab 5 - Caching Extent Server + Consistency</a><br>
+<a href="labs/lab-6.html">Lab 6 - Paxos</a><br>
+<a href="labs/lab-7.html">Lab 7 - Replicated lock server</a><br>
+<a href="labs/lab-8.html">Lab 8 - Project</a><br>
+
+<h2>Collaboration Policy</h2>
+
+You must write all the code you hand in for the programming
+assignments, except for code that we give you as part of the
+assignment. You are not allowed to look at anyone else's solution, and
+you are not allowed to look at code from previous years. You may
+discuss the assignments with other students, but you may not look at
+or copy each others' code.
+
+
+
+<a name="machines"></a> 
+<h2>Programming Environment</h2>
+
+<p>
+You should be able to do Lab 1 on any Unix-style machine, including
+your own Linux/FreeBSD desktops, MacOS laptops, or any Athena
+SunOS/Linux workstation.
+
+</p><p>
+For Labs 2 and beyond, you'll need to use a computer that has the FUSE
+module, library, and headers installed.  You should be able to install
+these on your own machine by following the instructions at <a href="http://fuse.sourceforge.net/">fuse.sourceforge.net</a>;
+we outline <a href="labs/index.html#fuse">instructions</a> for Ubuntu/Debian machines.
+However,
+the <b>official</b> programming environment for this class will be the
+Athena Linux machines (you can find a list of Athena Linux workstation
+locations <a href="http://web.mit.edu/olh/Clusters/">here</a>).  What
+we mean by official is that we will be testing your assignments using
+that environment, so please make sure your code passes the tests on an
+Athena Linux machine.
+
+</p><p>
+Note that if you have your own FreeBSD or MacOS machines that you
+prefer to use for programming, you should be able to use them for the
+majority of the work.  However, there are minor annoying differences
+between FUSE on Linux and FUSE on other operating systems that may
+cause your code to fail our tests when it seems to pass for you.  As
+an example, on Linux FUSE passes file creation operation to the file
+system using the MKNOD call, while on other systems it uses CREATE.
+Please ensure that your assignment passes the tests in the Athena
+Linux environment, and there shouldn't be any problems when we test
+it.
+
+</p><h3>Athena Linux Machines Without FUSE</h3>
+
+<p>
+Some Athena Linux workstations do not have FUSE installed on them by default.
+We have created a 6.824 locker that includes all the necessary FUSE
+files, as well as installation scripts.  Note that you must be root to
+run these scripts.  To install FUSE on an Athena Linux workstation, do
+the following:
+
+</p><pre>% attach 6.824
+% tellme root
+% su -
+  [Now enter the root password shown in the previous command to become root]
+% /mit/6.824/install-fuse.sh
+% exit
+</pre>
+
+<p>
+Now you should be able to compile your FUSE-based programs and run
+them without any problems.  When you are finished with a session and
+are about to log out, MIT asks that you please clean up after yourself
+by uninstalling the FUSE programs.  Do this as follows:
+
+</p><pre>% tellme root
+% su -
+  [Now enter the root password shown in the previous command to become root]
+% /mit/6.824/uninstall-fuse.sh
+% exit
+</pre>
+
+<a name="fuse"></a> 
+<h3>Installing FUSE on Ubuntu/Debian</h3>
+
+To setup FUSE on your local machine, you will need the header files and the
+utilities. Install them like this:
+
+<pre>sudo aptitude install libfuse2 fuse-utils libfuse-dev
+</pre>
+
+Next, you need to make sure the fuse module is loaded:
+
+<pre>% ls -l /dev/fuse 
+  crw-rw-rw- 1 root fuse 10, 229 2010-02-11 06:02 /dev/fuse
+</pre>
+
+If your <tt>ls</tt> output matches the above output, then you can skip the
+<tt>modprobe</tt> step.  If you do not see the above output, try running
+<tt>modprobe</tt>:
+
+<pre>% sudo modprobe fuse
+</pre>
+
+Finally, you need to add yourself to the fuse group to be able to mount
+FUSE file systems:
+
+<pre>% sudo adduser {your_user_name} fuse
+</pre>
+
+Make sure to logout of you current session to refresh your group list.
+When you logged in again, typing groups at the command line should 
+show fuse as one of the groups:
+
+<pre>% groups
+  alex users fuse admin
+</pre>
+
+<!--
+<a name="vmware">
+<h3>Linux VMWare image with FUSE</h3>
+
+<p>
+We've created a VMWare Linux image based on the Debian 4.0r0 server
+image from <a href="http://www.thoughtpolice.co.uk/vmware/">Thought
+Police</a>.  It has FUSE pre-installed on it, and should have
+everything you need to compile and run the labs.  You can download it here:
+
+<p>
+<a href="6.824-debian-40r0-i386.zip">6.824-debian-40r0-i386.zip</a> (566 MB)<br>
+Non-root account: username=notroot, password=6.82fork<br>
+Root account: password=6.82fork
+
+<p>You should be able to run this with <a
+href="http://vmware.com/download/player/">VMWare Player</a>, which is
+available for free from VMWare.  We have tested it on Windows and
+Linux; it should work for Intel Macs as well, but we haven't verified
+this (though be aware there is no free VMWare Player for Mac).
+
+<p>
+Note that the official environment for the labs is still the Athena
+Linux workstations, and that's where we will be testing your code.
+However this VMWare image is using the same version of FUSE and
+roughly the same operating system version; please note, though, that
+it appears that to create a file, the VMWare Linux/FUSE combo in the
+kernel uses the CREATE operation, rather than the MKNOD sent by the
+Athena Linux/FUSE combo, so you must test your labs at least once on
+an Athena Linux machine before submitting.  Also note that we don't
+really have the energy or expertise to debug any VMWare problems you
+might have.  This is just meant to be helpful for those of you who
+don't have personal Linux machines, and find it inconvenient to sit at
+an Athena workstation.
+
+<p>There has been at least one report that running the code in VMWare
+is much slower than running it directly on hardware, and as a result,
+RPCs timeout more often even when RPC_LOSSY is unset.  Be on the
+lookout for errors related to this.
+
+<p>
+You may find that the network doesn't work when you boot the image up
+for the first time.  This is a known problem with the Thought Police
+image.  To fix this, run the following command as root:
+
+<pre>
+$ rm /etc/udev/rules.d/z25_persistent-net.rules && reboot 
+</pre>
+-->
+
+<h2><a name="help">Aids for working on labs</a></h2>
+
+There are a number of resources available to help
+you with the lab portion of this course:
+<ul>
+
+<li><b>C++ Standard Template Library</b>:
+<p>You will use C++ STL classes such as map and string a lot,
+so it's worth while to be familiar with the methods they
+offer; have a look <a href="http://www.cplusplus.com/reference/">here</a>.
+</p></li>
+
+<li><b>pthreads</b>:
+<p> All the labs use the POSIX threads API
+(pthreads).  A comprehensive guide to programming with pthreads can be
+found here: <a href="http://www.llnl.gov/computing/tutorials/pthreads/">http://www.llnl.gov/computing/tutorials/pthreads/</a></p></li>
+
+<li><b>FUSE</b>: <p>The labs use the FUSE interface to plug the lab file
+system into the operating system.  See the <a href="http://fuse.sourceforge.net/">FUSE website</a> for more
+information.
+
+</p></li><li><b>Debugging and Core files</b>: 
+<p><tt>printf</tt> statements are often the best way to debug.
+You may also want to use <tt>gdb</tt>, the GNU
+debugger.  You may find this <a href="http://www.delorie.com/gnu/docs/gdb/gdb_toc.html">gdb reference</a>
+useful. Below are a few tips.
+</p><p>
+If your program crashes and leaves a core dump file, you can see where the
+crash occured with <tt>gdb program core</tt>, where
+<tt>program</tt> is the name of the executable.
+Type <tt>bt</tt> to examine the call stack at the time of the crash.
+
+</p><p>
+If you know your program is likely to have a problem, you can
+run it with gdb from the beginning, using <tt>gdb program</tt>.
+Then type <tt>run</tt>.
+
+</p><p> 
+If your program is already running (or it is hard to start with gdb
+due to complex start-up scripts), you can attach gdb to it by typing 
+<tt>gdb program 1234</tt>, where
+<tt>1234</tt> is the process ID of your running program.
+
+</p><p>While in gdb, you can set breakpoints (use the gdb command <tt>b</tt>) to stop the execution at
+specific points, examine variable contents (<tt>print ...</tt>), 
+get a list of threads (<tt>info threads</tt>), switch threads (<tt>thread X</tt>), etc.
+
+</p><p>To apply a given gdb command to all threads in your program, prepend <tt>thread apply all</tt>
+to your command. For example, <tt>thread apply all bt</tt> dumps the backtrace for all threads.
+
+</p><p>Look at <a href="http://www.gnu.org/software/gdb/documentation/">the GDB manual</a>
+for full documentation.</p></li>
+
+</ul>
+
+<hr>
+<p>Questions or comments regarding 6.824? Send e-mail to <a href="mailto:6.824-staff@pdos.csail.mit.edu"><i>6.824-staff@pdos.csail.mit.edu</i></a>.</p>
+
+<p><b><a href="labs/index.html#top">Top</a></b> // <b><a href="index.html">6.824 home</a></b> //</p>
+
+
+</body></html>
